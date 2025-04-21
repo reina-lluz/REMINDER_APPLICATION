@@ -20,7 +20,7 @@ namespace REMINDER_APPLICATION
     {
         private List<Reminder> Reminders = new List<Reminder>();
         private Reminder SelectedReminder;
-        private readonly string filePath = @"C:\Users\AMD Ryzen 3 3200G\source\repos\REMINDER_APPLICATION.txt";
+        private readonly string filePath = @"C:\Users\23-0119c\source\repos\REMINDER_APPLICATION\reminder_application.txt";
 
         public MainWindow()
         {
@@ -34,37 +34,54 @@ namespace REMINDER_APPLICATION
             string title = TitleTextBox.Text;
             string description = DescriptionTextBox.Text;
             DateTime? reminderTime = ReminderDatePicker.SelectedDate;
-            string priority = (PriorityComboBox.SelectedItem as ComboBoxItem).Content.ToString();
-            string category = (CategoryComboBox.SelectedItem as ComboBoxItem).Content.ToString();
+            string priority = (PriorityComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+            string category = (CategoryComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
-            // Validate that the date is not in the past
-            if (reminderTime == null || reminderTime < DateTime.Now)
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description) || reminderTime == null || string.IsNullOrWhiteSpace(priority) || string.IsNullOrWhiteSpace(category))
+            {
+                MessageBox.Show("Please fill in all fields.");
+                return;
+            }
+
+            if (reminderTime < DateTime.Now)
             {
                 MessageBox.Show("Please choose a date in the present or future.");
                 return;
             }
 
-            // Create a new reminder
-            Reminder newReminder = new Reminder
+            if (SelectedReminder != null)
             {
-                Title = title,
-                Description = description,
-                Time = reminderTime.Value.ToString("g"),
-                Priority = priority,
-                Category = category
-            };
+                // Update existing reminder
+                SelectedReminder.Title = title;
+                SelectedReminder.Description = description;
+                SelectedReminder.Time = reminderTime.Value.ToString("g");
+                SelectedReminder.Priority = priority;
+                SelectedReminder.Category = category;
 
-            // Add reminder to the list
-            Reminders.Add(newReminder);
+                SelectedReminder = null; // Clear after edit
+            }
+            else
+            {
+                // Create a new reminder
+                Reminder newReminder = new Reminder
+                {
+                    Title = title,
+                    Description = description,
+                    Time = reminderTime.Value.ToString("g"),
+                    Priority = priority,
+                    Category = category
+                };
+
+                Reminders.Add(newReminder);
+            }
 
             // Sort reminders by priority
             Reminders = Reminders.OrderBy(r => r.Priority == "Low" ? 3 : r.Priority == "Medium" ? 2 : 1).ToList();
 
-            // Display the reminder in the list view
+            // Refresh list
             ReminderListView.ItemsSource = null;
             ReminderListView.ItemsSource = Reminders;
 
-            // Save the reminders to the file
             SaveReminders();
 
             // Clear input fields
@@ -74,6 +91,7 @@ namespace REMINDER_APPLICATION
             PriorityComboBox.SelectedIndex = -1;
             CategoryComboBox.SelectedIndex = -1;
         }
+
 
         // Event handler for the "Edit Reminder" button click
         private void EditReminderButton_Click(object sender, RoutedEventArgs e)
@@ -152,6 +170,16 @@ namespace REMINDER_APPLICATION
                 Reminders = Reminders.OrderBy(r => r.Priority == "Low" ? 3 : r.Priority == "Medium" ? 2 : 1).ToList();
                 ReminderListView.ItemsSource = Reminders;
             }
+        }
+
+        private void ReminderListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void TitleTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 
